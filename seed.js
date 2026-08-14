@@ -2,7 +2,6 @@ require('dotenv').config();
 const neo4j = require('neo4j-driver');
 
 const URI = process.env.COGNO_URI;
-const USER = 'cognodb';
 const PASSWORD = process.env.COGNO_PASSWORD;
 
 if (!URI || !PASSWORD) {
@@ -10,7 +9,7 @@ if (!URI || !PASSWORD) {
     process.exit(1);
 }
 
-const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
+const driver = neo4j.driver(URI, neo4j.auth.basic('cognodb', PASSWORD));
 
 const bloodCompatibilities = {
     "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
@@ -25,12 +24,16 @@ const bloodCompatibilities = {
 
 const regions = ["Mundakayam", "Kottayam", "Kuttikkanam", "Kottarakara"];
 
+// Reduced to exactly 6 hospitals distributed across the 4 regions
 const hospitals = [
     { name: "Mundakayam Medical Trust", region: "Mundakayam", needs: "A+" },
-    { name: "Kottayam General Hospital", region: "Kottayam", needs: "O-" }
+    { name: "Mundakayam Central Clinic", region: "Mundakayam", needs: "O-" },
+    { name: "Kottayam General Hospital", region: "Kottayam", needs: "B+" },
+    { name: "Kottayam City Hospital", region: "Kottayam", needs: "AB-" },
+    { name: "Kuttikkanam Care Center", region: "Kuttikkanam", needs: "O+" },
+    { name: "Kottarakara Memorial Hospital", region: "Kottarakara", needs: "A-" }
 ];
 
-// Helper to generate a random past date as YYYY-MM-DD
 function getRandomPastDate(maxDaysAgo) {
     const daysAgo = Math.floor(Math.random() * maxDaysAgo);
     const date = new Date();
@@ -42,6 +45,7 @@ async function seedDatabase() {
     const session = driver.session();
     try {
         await session.executeWrite(async tx => {
+            console.log("Clearing old data...");
             await tx.run("MATCH (n) DETACH DELETE n");
 
             console.log("Creating Blood Types and Compatibility relationships...");
@@ -62,7 +66,7 @@ async function seedDatabase() {
                 await tx.run("MERGE (r:Region {name: $name})", { name: region });
             }
 
-            console.log("Creating Hospitals...");
+            console.log("Creating 6 Hospitals...");
             for (const hosp of hospitals) {
                 await tx.run(`
                     MATCH (r:Region {name: $region})
@@ -73,16 +77,14 @@ async function seedDatabase() {
                 `, hosp);
             }
 
-            console.log("Generating 50 dummy donors with donation history...");
+            console.log("Generating 100 dummy donors with donation history...");
             const bloodTypesList = Object.keys(bloodCompatibilities);
             
-            for (let i = 1; i <= 50; i++) {
+            for (let i = 1; i <= 100; i++) {
                 const b_type = bloodTypesList[Math.floor(Math.random() * bloodTypesList.length)];
                 const region = regions[Math.floor(Math.random() * regions.length)];
                 const is_available = Math.random() < 0.8; 
                 const phone = `+91 98765 ${Math.floor(10000 + Math.random() * 90000)}`;
-                
-                // Assign a random last donation date between 10 and 200 days ago
                 const last_donated_date = getRandomPastDate(200);
 
                 await tx.run(`
@@ -101,9 +103,9 @@ async function seedDatabase() {
                 });
             }
         });
-        console.log("Seed data successfully loaded into CognoDB!");
+        console.log("✅ Seed data successfully loaded into CognoDB!");
     } catch (error) {
-        console.error("Error seeding database:", error);
+        console.error("❌ Error seeding database:", error);
     } finally {
         await session.close();
         await driver.close();

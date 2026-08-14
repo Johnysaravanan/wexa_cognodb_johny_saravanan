@@ -8,9 +8,7 @@
     <script>
         tailwind.config = {
             theme: {
-                extend: {
-                    colors: { blood: '#e11d48' }
-                }
+                extend: { colors: { blood: '#e11d48' } }
             }
         }
     </script>
@@ -26,65 +24,92 @@
             <p class="text-gray-500">Real-time local donor matching via Graph DB</p>
         </header>
 
-        <!-- Control Panel -->
+        <!-- Control Panel with 2 Dropdowns -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8 flex flex-col sm:flex-row gap-4 items-end">
+            
+            <!-- Hospital Selector -->
             <div class="flex-1 w-full">
-                <label for="hospital" class="block text-sm font-medium text-gray-700 mb-1">Select Hospital Location</label>
+                <label for="hospital" class="block text-sm font-medium text-gray-700 mb-1">Select Hospital</label>
                 <select id="hospital" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-blood focus:border-blood outline-none bg-gray-50">
-                    <option value="Mundakayam Medical Trust">Mundakayam Medical Trust</option>
-                    <option value="Kottayam General Hospital">Kottayam General Hospital</option>
+                    <optgroup label="Mundakayam">
+                        <option value="Mundakayam Medical Trust">Mundakayam Medical Trust</option>
+                        <option value="Mundakayam Central Clinic">Mundakayam Central Clinic</option>
+                    </optgroup>
+                    <optgroup label="Kottayam">
+                        <option value="Kottayam General Hospital">Kottayam General Hospital</option>
+                        <option value="Kottayam City Hospital">Kottayam City Hospital</option>
+                    </optgroup>
+                    <optgroup label="Kuttikkanam">
+                        <option value="Kuttikkanam Care Center">Kuttikkanam Care Center</option>
+                    </optgroup>
+                    <optgroup label="Kottarakara">
+                        <option value="Kottarakara Memorial Hospital">Kottarakara Memorial Hospital</option>
+                    </optgroup>
                 </select>
             </div>
+
+            <!-- Blood Type Selector -->
+            <div class="flex-1 w-full">
+                <label for="bloodType" class="block text-sm font-medium text-gray-700 mb-1">Blood Type Needed</label>
+                <select id="bloodType" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-blood focus:border-blood outline-none bg-gray-50">
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
             <button onclick="fetchDonors()" class="w-full sm:w-auto bg-blood hover:bg-rose-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-                Find Emergency Donors
+                Find Donors
             </button>
         </div>
 
         <!-- Dynamic Results Area -->
         <div id="results-area" class="min-h-[200px]">
             
-            <!-- Initial State -->
+            <!-- 1. Initial State -->
             <div id="state-initial" class="text-center py-12 text-gray-400">
-                <svg class="mx-auto h-12 w-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <p>Select a hospital to initiate a multi-hop graph search.</p>
+                <p>Select a hospital and blood type to trigger a database update and search.</p>
             </div>
 
-            <!-- Loading State -->
+            <!-- 2. Loading State -->
             <div id="state-loading" class="hidden text-center py-12">
                 <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blood mx-auto mb-4"></div>
-                <p class="text-gray-500 font-medium">Traversing the graph for compatible donors...</p>
+                <p class="text-gray-500 font-medium">Updating emergency graph and finding donors...</p>
             </div>
 
-            <!-- Error State -->
+            <!-- 3. Error State -->
             <div id="state-error" class="hidden bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 text-center">
                 <p class="font-semibold">Connection Error</p>
                 <p class="text-sm mt-1">Unable to reach the database. Ensure the backend is running.</p>
             </div>
 
-            <!-- Empty State -->
+            <!-- 4. Empty State (0 matches) -->
             <div id="state-empty" class="hidden text-center py-12 bg-gray-100 rounded-xl border border-dashed border-gray-300">
                 <p class="text-gray-600 font-medium text-lg">No donors found.</p>
-                <p class="text-gray-400 text-sm mt-1">No available, compatible donors found in this region.</p>
+                <p id="empty-needs" class="text-gray-400 text-sm mt-1"></p>
             </div>
 
-            <!-- Data State (Results List) -->
+            <!-- 5. Data State (Match Results) -->
             <div id="state-data" class="hidden">
-                <div class="mb-4 flex justify-between items-end border-b pb-2">
+                <div class="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-end border-b pb-2 gap-2">
                     <h2 class="text-xl font-bold text-gray-800">Match Results</h2>
-                    <span id="meta-info" class="text-sm font-medium bg-rose-100 text-blood px-3 py-1 rounded-full"></span>
+                    <span id="meta-info" class="text-sm font-medium bg-rose-100 text-blood px-3 py-1 rounded-full whitespace-nowrap"></span>
                 </div>
                 <div id="donor-list" class="grid gap-4 sm:grid-cols-2">
                     <!-- Donor cards injected here via JS -->
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // UI State Management Helper
+        // Helper function to manage UI state visibility
         function showState(stateId) {
             ['initial', 'loading', 'error', 'empty', 'data'].forEach(state => {
                 document.getElementById(`state-${state}`).classList.add('hidden');
@@ -92,32 +117,41 @@
             document.getElementById(`state-${stateId}`).classList.remove('hidden');
         }
 
+        // Main fetching function
         async function fetchDonors() {
             const hospitalName = document.getElementById('hospital').value;
+            const bloodType = document.getElementById('bloodType').value;
+            
+            // Show the loading spinner while fetching
             showState('loading');
 
             try {
-                // Ensure your backend is running on port 3000!
-                const response = await fetch(`http://localhost:3000/api/emergency-donors/${encodeURIComponent(hospitalName)}`);
+                // Execute POST request to the backend server
+                const response = await fetch(`http://localhost:3000/api/emergency-donors`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hospitalName, bloodType })
+                });
                 
                 if (!response.ok) throw new Error('Network response was not ok');
-                
                 const result = await response.json();
-
+                
                 if (!result.success) throw new Error(result.message);
 
+                // Handle 0 results scenario
                 if (result.donorCount === 0) {
+                    document.getElementById('empty-needs').innerText = `Needs: ${result.bloodNeeded} | 0 compatible donors found in region.`;
                     showState('empty');
                     return;
                 }
 
-                // Render meta info to prove the multi-hop worked
+                // Populate Meta Information
                 document.getElementById('meta-info').innerText = 
-                    `Hospital needs: ${result.bloodNeeded} | Found: ${result.donorCount} compatible donors`;
+                    `Needs: ${result.bloodNeeded} | Found: ${result.donorCount} compatible donors`;
 
                 // Render Donor Cards
                 const listContainer = document.getElementById('donor-list');
-                listContainer.innerHTML = ''; // Clear previous results
+                listContainer.innerHTML = ''; 
                 
                 result.data.forEach(donor => {
                     const card = document.createElement('div');
@@ -125,11 +159,11 @@
                     card.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="font-bold text-gray-900 text-lg">${donor.name}</h3>
-                            <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">${donor.bloodType}</span>
+                            <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded border">${donor.bloodType}</span>
                         </div>
-                        <div class="text-sm text-gray-600 mb-4 flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            ${donor.region}
+                        <div class="text-sm text-gray-500 mb-4 flex flex-col gap-1">
+                            <span class="flex items-center gap-1">📍 ${donor.region}</span>
+                            <span class="flex items-center gap-1">🕒 Last Donated: ${donor.lastDonated}</span>
                         </div>
                         <a href="tel:${donor.phone}" class="block text-center w-full bg-green-50 hover:bg-green-100 text-green-700 font-medium py-2 rounded border border-green-200 transition-colors">
                             Call ${donor.phone}
@@ -138,11 +172,12 @@
                     listContainer.appendChild(card);
                 });
 
+                // Show the populated data
                 showState('data');
 
             } catch (error) {
                 console.error("Fetch error:", error);
-                showState('error');
+                showState('error'); // Trigger the error UI
             }
         }
     </script>
