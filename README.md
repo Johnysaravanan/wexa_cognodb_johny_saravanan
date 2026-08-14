@@ -205,24 +205,6 @@ Examples:
 - `AB+` can receive from all compatible types
 - negative blood types only donate to compatible negative and positive recipients as defined by the graph
 
-## UI Screenshots
-
-Add screenshots of the browser interface here after running the app locally.
-
-Suggested screenshots:
-
-- home screen with hospital and blood type selectors
-- donor results view
-- error state when the backend is offline
-
-Example markdown once screenshots are added:
-
-```md
-(<img src="./Images/Home.png" alt="Home Screen" width="500">)
-(<img src="./Images/Dashboard.png" alt="Home Screen" width="500">)
-(<img src="./Images/connectionerror.png" alt="Home Screen" width="500">)
-```
-
 ## API
 
 ### `POST /api/emergency-donors`
