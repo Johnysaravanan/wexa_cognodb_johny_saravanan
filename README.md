@@ -213,15 +213,14 @@ Suggested screenshots:
 
 - home screen with hospital and blood type selectors
 - donor results view
-- empty state when no donors are found
 - error state when the backend is offline
 
 Example markdown once screenshots are added:
 
 ```md
-![Home Screen](./Images/Home.png)
-![Results Screen](./Images/Dashboard.png)
-![Results Screen](./Images/Connectionerror.png)
+(<img src="./Images/Home.png" alt="Home Screen" width="500">)
+(<img src="./Images/Dashboard.png" alt="Home Screen" width="500">)
+(<img src="./Images/connectionerror.png" alt="Home Screen" width="500">)
 ```
 
 ## API
