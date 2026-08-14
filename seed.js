@@ -24,7 +24,6 @@ const bloodCompatibilities = {
 
 const regions = ["Mundakayam", "Kottayam", "Kuttikkanam", "Kottarakara"];
 
-// Reduced to exactly 6 hospitals distributed across the 4 regions
 const hospitals = [
     { name: "Mundakayam Medical Trust", region: "Mundakayam", needs: "A+" },
     { name: "Mundakayam Central Clinic", region: "Mundakayam", needs: "O-" },
@@ -51,7 +50,6 @@ async function seedDatabase() {
             console.log("Creating Blood Types and Compatibility relationships...");
             for (const [donorType, receivers] of Object.entries(bloodCompatibilities)) {
                 await tx.run("MERGE (b:BloodType {type: $type})", { type: donorType });
-                
                 for (const receiverType of receivers) {
                     await tx.run(`
                         MERGE (d:BloodType {type: $donor})
@@ -77,10 +75,9 @@ async function seedDatabase() {
                 `, hosp);
             }
 
-            console.log("Generating 100 dummy donors with donation history...");
+            console.log("Generating 400 dummy donors with donation history...");
             const bloodTypesList = Object.keys(bloodCompatibilities);
-            
-            for (let i = 1; i <= 100; i++) {
+            for (let i = 1; i <= 400; i++) {
                 const b_type = bloodTypesList[Math.floor(Math.random() * bloodTypesList.length)];
                 const region = regions[Math.floor(Math.random() * regions.length)];
                 const is_available = Math.random() < 0.8; 

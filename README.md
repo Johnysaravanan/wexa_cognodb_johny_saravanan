@@ -216,11 +216,10 @@ Suggested screenshots:
 - empty state when no donors are found
 - error state when the backend is offline
 
-Example markdown once screenshots are added:
 
 ```md
-![Home Screen](./screenshots/home.png)
-![Results Screen](./screenshots/results.png)
+![Home Screen](./Images/home.png)
+![Results Screen](./Images/home.png)
 ```
 
 ## API

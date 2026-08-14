@@ -1,19 +1,16 @@
 {
-  "name": "blood",
+  "name": "local-blood-link",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Graph DB backed emergency blood donor network",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "seed": "node seed.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "neo4j-driver": "^6.2.0"
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "neo4j-driver": "^5.23.0"
   }
 }
