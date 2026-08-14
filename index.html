@@ -127,7 +127,7 @@
 
             try {
                 // Execute POST request to the backend server
-                const response = await fetch(`http://localhost:3000/api/emergency-donors`, {
+                const response = await fetch(`https://wexa-cognodb-johny-saravanan.onrender.com/api/emergency-donors`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ hospitalName, bloodType })
