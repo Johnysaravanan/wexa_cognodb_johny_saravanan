@@ -219,8 +219,9 @@ Suggested screenshots:
 Example markdown once screenshots are added:
 
 ```md
-![Home Screen](./screenshots/home.png)
-![Results Screen](./screenshots/results.png)
+![Home Screen](./Images/Home.png)
+![Results Screen](./Images/Dashboard.png)
+![Results Screen](./Images/Connectionerror.png)
 ```
 
 ## API
